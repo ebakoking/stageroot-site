@@ -18,127 +18,120 @@
         .btn { width: 100%; padding: 15px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: #1F4A3A; border: none; border-radius: 14px; cursor: pointer; }
         .btn:hover { background: #2C5E46; }
         .btn:disabled { background: #A0AAA4; cursor: not-allowed; }
-        .error { color: #B85A46; font-size: 13px; text-align: center; margin-bottom: 12px; display: none; }
-        .success { text-align: center; }
-        .success h2 { color: #1F4A3A; font-size: 20px; margin-bottom: 8px; }
-        .success p { color: #6E7A73; font-size: 14px; line-height: 1.5; }
-        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #A0AAA4; }
+        .msg { font-size: 13px; text-align: center; margin-bottom: 12px; padding: 10px; border-radius: 8px; }
+        .msg.error { color: #B85A46; background: #FCEBEB; }
+        .msg.success { color: #085041; background: #E1F5EE; }
+        .msg.info { color: #633806; background: #FAEEDA; }
         .hidden { display: none; }
-        .debug { color: #A0AAA4; font-size: 11px; text-align: center; margin-top: 12px; word-break: break-all; }
+        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #A0AAA4; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="brand">STAGEROOT</div>
-        <div class="card" id="loading-card">
-            <h1>Yükleniyor...</h1>
-            <p class="subtitle">Lütfen bekle.</p>
-        </div>
-        <div class="card hidden" id="form-card">
-            <h1>Yeni Şifre Belirle</h1>
-            <p class="subtitle">Yeni şifreni gir ve onayla.</p>
-            <div class="error" id="error-msg"></div>
-            <label for="password">Yeni Şifre</label>
-            <input type="password" id="password" placeholder="En az 6 karakter" minlength="6">
-            <label for="password-confirm">Şifre Tekrar</label>
-            <input type="password" id="password-confirm" placeholder="Şifreni tekrar gir">
-            <button class="btn" id="submit-btn" onclick="handleReset()">Şifremi Güncelle</button>
-        </div>
-        <div class="card hidden" id="success-card">
-            <h2>Şifren Güncellendi</h2>
-            <p>Yeni şifrenle uygulamaya giriş yapabilirsin.</p>
-        </div>
-        <div class="card hidden" id="expired-card">
-            <h1>Link Geçersiz</h1>
-            <p class="subtitle">Bu şifre sıfırlama linki geçersiz veya süresi dolmuş. Uygulamadan tekrar şifre sıfırlama talebi oluşturabilirsin.</p>
-            <p class="debug" id="debug-info"></p>
+        <div class="card" id="main-card">
+            <h1 id="title">Yükleniyor...</h1>
+            <p class="subtitle" id="subtitle">Lütfen bekle.</p>
+            <div class="hidden" id="msg-box"></div>
+            <div class="hidden" id="form-area">
+                <label for="password">Yeni Şifre</label>
+                <input type="password" id="password" placeholder="En az 6 karakter">
+                <label for="password-confirm">Şifre Tekrar</label>
+                <input type="password" id="password-confirm" placeholder="Şifreni tekrar gir">
+                <button class="btn" id="submit-btn">Şifremi Güncelle</button>
+            </div>
         </div>
         <p class="footer">StageRoot — Kamera karşısında güçlü konuş</p>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script>
-        const SUPABASE_URL = 'https://ukvpdckldxaqzazemuxr.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrdnBkY2tsZHhhcXphemVtdXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2MTYxMDQsImV4cCI6MjA1NzE5MjEwNH0.a1J_OzXthaIlQ3ZGpdMVhA_Ho0LY70v1Z_tBqrvGnWQ';
-        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        var SUPABASE_URL = 'https://ukvpdckldxaqzazemuxr.supabase.co';
+        var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrdnBkY2tsZHhhcXphemVtdXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2MTYxMDQsImV4cCI6MjA1NzE5MjEwNH0.a1J_OzXthaIlQ3ZGpdMVhA_Ho0LY70v1Z_tBqrvGnWQ';
+        var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function show(id) {
-            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
+        function showMsg(text, type) {
+            var el = document.getElementById('msg-box');
+            el.textContent = text;
+            el.className = 'msg ' + type;
+            el.classList.remove('hidden');
+        }
+
+        function showForm() {
+            document.getElementById('title').textContent = 'Yeni Şifre Belirle';
+            document.getElementById('subtitle').textContent = 'Yeni şifreni gir ve onayla.';
+            document.getElementById('form-area').classList.remove('hidden');
+        }
+
+        function showExpired(detail) {
+            document.getElementById('title').textContent = 'Link Geçersiz';
+            document.getElementById('subtitle').textContent = 'Bu link geçersiz veya süresi dolmuş. Uygulamadan tekrar şifre sıfırlama talebi oluştur.';
+            if (detail) showMsg(detail, 'info');
+        }
+
+        function showSuccess() {
+            document.getElementById('title').textContent = 'Şifren Güncellendi';
+            document.getElementById('subtitle').textContent = 'Yeni şifrenle uygulamaya giriş yapabilirsin.';
+            document.getElementById('form-area').classList.add('hidden');
+            document.getElementById('msg-box').classList.add('hidden');
         }
 
         async function init() {
             try {
                 var hash = window.location.hash.substring(1);
-                var query = window.location.search.substring(1);
-                var hashParams = new URLSearchParams(hash);
-                var queryParams = new URLSearchParams(query);
+                var search = window.location.search.substring(1);
+                var hp = new URLSearchParams(hash);
+                var sp = new URLSearchParams(search);
 
-                var accessToken = hashParams.get('access_token');
-                var refreshToken = hashParams.get('refresh_token');
-                var type = hashParams.get('type') || queryParams.get('type');
-                var code = queryParams.get('code');
+                var accessToken = hp.get('access_token');
+                var refreshToken = hp.get('refresh_token');
+                var type = hp.get('type') || sp.get('type');
+                var code = sp.get('code');
 
                 if (accessToken && type === 'recovery') {
-                    var result = await client.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-                    if (result.error) {
-                        document.getElementById('debug-info').textContent = 'Session error: ' + result.error.message;
-                        show('expired-card');
-                    } else {
-                        show('form-card');
-                    }
+                    var r = await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+                    if (r.error) { showExpired('Oturum hatası: ' + r.error.message); }
+                    else { showForm(); }
                 } else if (code) {
-                    var result = await client.auth.exchangeCodeForSession(code);
-                    if (result.error) {
-                        document.getElementById('debug-info').textContent = 'Code error: ' + result.error.message;
-                        show('expired-card');
-                    } else {
-                        show('form-card');
-                    }
+                    var r = await sb.auth.exchangeCodeForSession(code);
+                    if (r.error) { showExpired('Kod hatası: ' + r.error.message); }
+                    else { showForm(); }
                 } else {
-                    var session = await client.auth.getSession();
-                    if (session.data.session) {
-                        show('form-card');
-                    } else {
-                        document.getElementById('debug-info').textContent = 'No token found. Hash: ' + hash.substring(0, 50) + '... Query: ' + query.substring(0, 50);
-                        show('expired-card');
-                    }
+                    var r = await sb.auth.getSession();
+                    if (r.data && r.data.session) { showForm(); }
+                    else { showExpired('URL de token bulunamadı.'); }
                 }
             } catch (e) {
-                document.getElementById('debug-info').textContent = 'Init error: ' + e.message;
-                show('expired-card');
+                showExpired('Hata: ' + e.message);
             }
         }
 
-        async function handleReset() {
-            var password = document.getElementById('password').value;
-            var confirmPw = document.getElementById('password-confirm').value;
-            var errorEl = document.getElementById('error-msg');
+        document.getElementById('submit-btn').addEventListener('click', async function() {
+            var pw = document.getElementById('password').value;
+            var pw2 = document.getElementById('password-confirm').value;
             var btn = document.getElementById('submit-btn');
-            errorEl.style.display = 'none';
+            document.getElementById('msg-box').classList.add('hidden');
 
-            if (password.length < 6) { errorEl.textContent = 'Şifre en az 6 karakter olmalı.'; errorEl.style.display = 'block'; return; }
-            if (password !== confirmPw) { errorEl.textContent = 'Şifreler eşleşmiyor.'; errorEl.style.display = 'block'; return; }
+            if (pw.length < 6) { showMsg('Şifre en az 6 karakter olmalı.', 'error'); return; }
+            if (pw !== pw2) { showMsg('Şifreler eşleşmiyor.', 'error'); return; }
 
             btn.disabled = true;
             btn.textContent = 'Güncelleniyor...';
 
             try {
-                var result = await client.auth.updateUser({ password: password });
-                if (result.error) {
-                    errorEl.textContent = result.error.message;
-                    errorEl.style.display = 'block';
+                var r = await sb.auth.updateUser({ password: pw });
+                if (r.error) {
+                    showMsg('Hata: ' + r.error.message, 'error');
                     btn.disabled = false;
                     btn.textContent = 'Şifremi Güncelle';
                 } else {
-                    show('success-card');
+                    showSuccess();
                 }
             } catch (e) {
-                errorEl.textContent = 'Hata: ' + e.message;
-                errorEl.style.display = 'block';
+                showMsg('Hata: ' + e.message, 'error');
                 btn.disabled = false;
                 btn.textContent = 'Şifremi Güncelle';
             }
-        }
+        });
 
         init();
     </script>
