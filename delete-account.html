@@ -16,14 +16,13 @@
         input { width: 100%; padding: 14px 16px; font-size: 15px; border: 1px solid #E6DFD3; border-radius: 12px; background: #F7F5EF; outline: none; margin-bottom: 16px; color: #15241E; }
         input:focus { border-color: #1F4A3A; }
         .btn { width: 100%; padding: 15px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: #1F4A3A; border: none; border-radius: 14px; cursor: pointer; }
-        .btn:hover { background: #2C5E46; }
         .btn:disabled { background: #A0AAA4; cursor: not-allowed; }
         .msg { font-size: 13px; text-align: center; margin-bottom: 12px; padding: 10px; border-radius: 8px; }
         .msg.error { color: #B85A46; background: #FCEBEB; }
-        .msg.success { color: #085041; background: #E1F5EE; }
         .msg.info { color: #633806; background: #FAEEDA; }
         .hidden { display: none; }
         .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #A0AAA4; }
+        #debug { font-size: 11px; color: #A0AAA4; margin-top: 12px; word-break: break-all; text-align: center; }
     </style>
 </head>
 <body>
@@ -39,6 +38,7 @@
                 <label for="password-confirm">Şifre Tekrar</label>
                 <input type="password" id="password-confirm" placeholder="Şifreni tekrar gir">
                 <button class="btn" id="submit-btn">Şifremi Güncelle</button>
+                <p id="debug"></p>
             </div>
         </div>
         <p class="footer">StageRoot — Kamera karşısında güçlü konuş</p>
@@ -48,6 +48,7 @@
         var SUPABASE_URL = 'https://ukvpdckldxaqzazemuxr.supabase.co';
         var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrdnBkY2tsZHhhcXphemVtdXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2MTYxMDQsImV4cCI6MjA1NzE5MjEwNH0.a1J_OzXthaIlQ3ZGpdMVhA_Ho0LY70v1Z_tBqrvGnWQ';
         var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        var dbg = document.getElementById('debug');
 
         function showMsg(text, type) {
             var el = document.getElementById('msg-box');
@@ -60,48 +61,48 @@
             document.getElementById('title').textContent = 'Yeni Şifre Belirle';
             document.getElementById('subtitle').textContent = 'Yeni şifreni gir ve onayla.';
             document.getElementById('form-area').classList.remove('hidden');
+            dbg.textContent = 'Oturum hazır, şifre girebilirsin.';
         }
 
         function showExpired(detail) {
             document.getElementById('title').textContent = 'Link Geçersiz';
-            document.getElementById('subtitle').textContent = 'Bu link geçersiz veya süresi dolmuş. Uygulamadan tekrar şifre sıfırlama talebi oluştur.';
+            document.getElementById('subtitle').textContent = 'Bu link geçersiz veya süresi dolmuş.';
             if (detail) showMsg(detail, 'info');
         }
 
-        function showSuccess() {
-            document.getElementById('title').textContent = 'Şifren Güncellendi';
-            document.getElementById('subtitle').textContent = 'Yeni şifrenle uygulamaya giriş yapabilirsin.';
-            document.getElementById('form-area').classList.add('hidden');
-            document.getElementById('msg-box').classList.add('hidden');
-        }
-
         async function init() {
+            dbg.textContent = 'Sayfa yüklendi, token aranıyor...';
             try {
                 var hash = window.location.hash.substring(1);
                 var search = window.location.search.substring(1);
                 var hp = new URLSearchParams(hash);
                 var sp = new URLSearchParams(search);
-
                 var accessToken = hp.get('access_token');
                 var refreshToken = hp.get('refresh_token');
                 var type = hp.get('type') || sp.get('type');
                 var code = sp.get('code');
 
+                dbg.textContent = 'type=' + type + ' token=' + (accessToken ? 'var' : 'yok') + ' code=' + (code ? 'var' : 'yok');
+
                 if (accessToken && type === 'recovery') {
+                    dbg.textContent = 'Hash token bulundu, oturum açılıyor...';
                     var r = await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-                    if (r.error) { showExpired('Oturum hatası: ' + r.error.message); }
-                    else { showForm(); }
+                    if (r.error) { showExpired('Oturum hatası: ' + r.error.message); dbg.textContent = JSON.stringify(r.error); }
+                    else { dbg.textContent = 'Oturum açıldı: ' + r.data.user.email; showForm(); }
                 } else if (code) {
+                    dbg.textContent = 'Code bulundu, exchange yapılıyor...';
                     var r = await sb.auth.exchangeCodeForSession(code);
                     if (r.error) { showExpired('Kod hatası: ' + r.error.message); }
                     else { showForm(); }
                 } else {
+                    dbg.textContent = 'Token yok, mevcut oturum kontrol ediliyor...';
                     var r = await sb.auth.getSession();
-                    if (r.data && r.data.session) { showForm(); }
-                    else { showExpired('URL de token bulunamadı.'); }
+                    if (r.data && r.data.session) { dbg.textContent = 'Mevcut oturum bulundu.'; showForm(); }
+                    else { showExpired('Token bulunamadı.'); dbg.textContent = 'hash: ' + hash.substring(0,80); }
                 }
             } catch (e) {
                 showExpired('Hata: ' + e.message);
+                dbg.textContent = 'init catch: ' + e.message;
             }
         }
 
@@ -110,24 +111,32 @@
             var pw2 = document.getElementById('password-confirm').value;
             var btn = document.getElementById('submit-btn');
             document.getElementById('msg-box').classList.add('hidden');
+            dbg.textContent = 'Buton tıklandı...';
 
             if (pw.length < 6) { showMsg('Şifre en az 6 karakter olmalı.', 'error'); return; }
             if (pw !== pw2) { showMsg('Şifreler eşleşmiyor.', 'error'); return; }
 
             btn.disabled = true;
             btn.textContent = 'Güncelleniyor...';
+            dbg.textContent = 'updateUser çağrılıyor...';
 
             try {
                 var r = await sb.auth.updateUser({ password: pw });
+                dbg.textContent = 'updateUser döndü: error=' + (r.error ? r.error.message : 'yok') + ' user=' + (r.data && r.data.user ? r.data.user.email : 'yok');
                 if (r.error) {
                     showMsg('Hata: ' + r.error.message, 'error');
                     btn.disabled = false;
                     btn.textContent = 'Şifremi Güncelle';
                 } else {
-                    showSuccess();
+                    document.getElementById('title').textContent = 'Şifren Güncellendi';
+                    document.getElementById('subtitle').textContent = 'Yeni şifrenle uygulamaya giriş yapabilirsin.';
+                    document.getElementById('form-area').classList.add('hidden');
+                    document.getElementById('msg-box').classList.add('hidden');
+                    dbg.textContent = '';
                 }
             } catch (e) {
                 showMsg('Hata: ' + e.message, 'error');
+                dbg.textContent = 'catch: ' + e.message;
                 btn.disabled = false;
                 btn.textContent = 'Şifremi Güncelle';
             }
