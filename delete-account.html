@@ -1,47 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Delete Account - StageRoot</title>
-<style>
-body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #F8F5F0; color: #333; line-height: 1.6; }
-h1 { color: #697254; }
-h2 { color: #92735C; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StageRoot — Şifre Sıfırlama</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #F7F5EF; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .container { max-width: 420px; width: 100%; }
+        .brand { text-align: center; margin-bottom: 24px; font-size: 13px; font-weight: 600; color: #2E7B59; letter-spacing: 1.5px; }
+        .card { background: #FFFFFF; border-radius: 16px; padding: 32px 24px; box-shadow: 0 1px 4px rgba(21,36,30,0.06); }
+        h1 { color: #1F4A3A; font-size: 22px; font-weight: 600; text-align: center; margin-bottom: 8px; }
+        .subtitle { color: #6E7A73; font-size: 14px; text-align: center; line-height: 1.5; margin-bottom: 24px; }
+        label { display: block; font-size: 13px; color: #6E7A73; margin-bottom: 6px; font-weight: 500; }
+        input { width: 100%; padding: 14px 16px; font-size: 15px; border: 1px solid #E6DFD3; border-radius: 12px; background: #F7F5EF; outline: none; margin-bottom: 16px; color: #15241E; }
+        input:focus { border-color: #1F4A3A; }
+        .btn { width: 100%; padding: 15px; font-size: 15px; font-weight: 500; color: #FFFFFF; background: #1F4A3A; border: none; border-radius: 14px; cursor: pointer; }
+        .btn:hover { background: #2C5E46; }
+        .btn:disabled { background: #A0AAA4; cursor: not-allowed; }
+        .error { color: #B85A46; font-size: 13px; text-align: center; margin-bottom: 12px; display: none; }
+        .success { text-align: center; }
+        .success h2 { color: #1F4A3A; font-size: 20px; margin-bottom: 8px; }
+        .success p { color: #6E7A73; font-size: 14px; line-height: 1.5; }
+        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #A0AAA4; }
+        .hidden { display: none; }
+        .debug { color: #A0AAA4; font-size: 11px; text-align: center; margin-top: 12px; word-break: break-all; }
+    </style>
 </head>
 <body>
-<h1>StageRoot — Delete Account &amp; Data</h1>
-<p><em>Last updated: March 2026</em></p>
+    <div class="container">
+        <div class="brand">STAGEROOT</div>
+        <div class="card" id="loading-card">
+            <h1>Yükleniyor...</h1>
+            <p class="subtitle">Lütfen bekle.</p>
+        </div>
+        <div class="card hidden" id="form-card">
+            <h1>Yeni Şifre Belirle</h1>
+            <p class="subtitle">Yeni şifreni gir ve onayla.</p>
+            <div class="error" id="error-msg"></div>
+            <label for="password">Yeni Şifre</label>
+            <input type="password" id="password" placeholder="En az 6 karakter" minlength="6">
+            <label for="password-confirm">Şifre Tekrar</label>
+            <input type="password" id="password-confirm" placeholder="Şifreni tekrar gir">
+            <button class="btn" id="submit-btn" onclick="handleReset()">Şifremi Güncelle</button>
+        </div>
+        <div class="card hidden" id="success-card">
+            <h2>Şifren Güncellendi</h2>
+            <p>Yeni şifrenle uygulamaya giriş yapabilirsin.</p>
+        </div>
+        <div class="card hidden" id="expired-card">
+            <h1>Link Geçersiz</h1>
+            <p class="subtitle">Bu şifre sıfırlama linki geçersiz veya süresi dolmuş. Uygulamadan tekrar şifre sıfırlama talebi oluşturabilirsin.</p>
+            <p class="debug" id="debug-info"></p>
+        </div>
+        <p class="footer">StageRoot — Kamera karşısında güçlü konuş</p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://ukvpdckldxaqzazemuxr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrdnBkY2tsZHhhcXphemVtdXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE2MTYxMDQsImV4cCI6MjA1NzE5MjEwNH0.a1J_OzXthaIlQ3ZGpdMVhA_Ho0LY70v1Z_tBqrvGnWQ';
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-<h2>How to Delete Your Account</h2>
-<p>You can delete your account and all associated data directly in the app:</p>
-<p>1. Open StageRoot</p>
-<p>2. Go to Profile tab</p>
-<p>3. Tap Settings icon (top right)</p>
-<p>4. Scroll to "Danger Zone"</p>
-<p>5. Tap "Delete Account"</p>
-<p>6. Confirm deletion</p>
+        function show(id) {
+            document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
 
-<h2>What Gets Deleted</h2>
-<p>When you delete your account, the following data is permanently removed:</p>
-<p>- Your profile information (name, username, email)</p>
-<p>- All video recordings and audio files</p>
-<p>- All AI feedback and analysis results</p>
-<p>- Practice history and progress data</p>
-<p>- Streak records</p>
-<p>- Credit balance and transaction history</p>
-<p>- Subscription information</p>
+        async function init() {
+            try {
+                var hash = window.location.hash.substring(1);
+                var query = window.location.search.substring(1);
+                var hashParams = new URLSearchParams(hash);
+                var queryParams = new URLSearchParams(query);
 
-<h2>Data Retention</h2>
-<p>- Video and audio files are deleted from servers within 24 hours of analysis, regardless of account status.</p>
-<p>- Upon account deletion, all remaining data is permanently removed immediately.</p>
-<p>- No data is retained after account deletion.</p>
+                var accessToken = hashParams.get('access_token');
+                var refreshToken = hashParams.get('refresh_token');
+                var type = hashParams.get('type') || queryParams.get('type');
+                var code = queryParams.get('code');
 
-<h2>Alternative: Request Deletion via Email</h2>
-<p>If you cannot access the app, email us at <strong>support@stageroot.app</strong> with the subject "Delete My Account" and we will process your request within 48 hours.</p>
+                if (accessToken && type === 'recovery') {
+                    var result = await client.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+                    if (result.error) {
+                        document.getElementById('debug-info').textContent = 'Session error: ' + result.error.message;
+                        show('expired-card');
+                    } else {
+                        show('form-card');
+                    }
+                } else if (code) {
+                    var result = await client.auth.exchangeCodeForSession(code);
+                    if (result.error) {
+                        document.getElementById('debug-info').textContent = 'Code error: ' + result.error.message;
+                        show('expired-card');
+                    } else {
+                        show('form-card');
+                    }
+                } else {
+                    var session = await client.auth.getSession();
+                    if (session.data.session) {
+                        show('form-card');
+                    } else {
+                        document.getElementById('debug-info').textContent = 'No token found. Hash: ' + hash.substring(0, 50) + '... Query: ' + query.substring(0, 50);
+                        show('expired-card');
+                    }
+                }
+            } catch (e) {
+                document.getElementById('debug-info').textContent = 'Init error: ' + e.message;
+                show('expired-card');
+            }
+        }
 
-<h2>Contact</h2>
-<p>support@stageroot.app</p>
+        async function handleReset() {
+            var password = document.getElementById('password').value;
+            var confirmPw = document.getElementById('password-confirm').value;
+            var errorEl = document.getElementById('error-msg');
+            var btn = document.getElementById('submit-btn');
+            errorEl.style.display = 'none';
+
+            if (password.length < 6) { errorEl.textContent = 'Şifre en az 6 karakter olmalı.'; errorEl.style.display = 'block'; return; }
+            if (password !== confirmPw) { errorEl.textContent = 'Şifreler eşleşmiyor.'; errorEl.style.display = 'block'; return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Güncelleniyor...';
+
+            try {
+                var result = await client.auth.updateUser({ password: password });
+                if (result.error) {
+                    errorEl.textContent = result.error.message;
+                    errorEl.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Şifremi Güncelle';
+                } else {
+                    show('success-card');
+                }
+            } catch (e) {
+                errorEl.textContent = 'Hata: ' + e.message;
+                errorEl.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Şifremi Güncelle';
+            }
+        }
+
+        init();
+    </script>
 </body>
 </html>
