@@ -3,80 +3,809 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StageRoot</title>
+  <title>StageRoot — AI Camera Performance Coach</title>
+  <meta name="description" content="Practice on camera, get personalized AI coaching feedback, and track your growth. For content creators, speakers, actors, and anyone who wants to shine on camera.">
+  <meta name="theme-color" content="#697254">
+  <link rel="canonical" href="https://stageroot.app/">
+  <meta property="og:title" content="StageRoot — AI Camera Performance Coach">
+  <meta property="og:description" content="Practice on camera, get personalized AI coaching feedback, and track your growth.">
+  <meta property="og:url" content="https://stageroot.app/">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --green: #697254;
+      --green-light: #8a9a6c;
+      --green-dark: #4e5a3b;
+      --brown: #92735C;
+      --brown-light: #B69C85;
+      --cream: #F8F5F0;
+      --cream-dark: #EDE8E0;
+      --dark: #3E362E;
+      --dark-soft: #5a5046;
+      --white: #FFFDF9;
+      --card-bg: rgba(255, 253, 249, 0.7);
+      --card-border: rgba(105, 114, 84, 0.12);
+      --gradient-hero: linear-gradient(165deg, #F8F5F0 0%, #e8e2d6 40%, #dcd4c6 100%);
+      --gradient-green: linear-gradient(135deg, #697254, #8a9a6c);
+      --gradient-warm: linear-gradient(135deg, #92735C, #B69C85);
+      --shadow-sm: 0 1px 3px rgba(62, 54, 46, 0.06);
+      --shadow-md: 0 4px 20px rgba(62, 54, 46, 0.08);
+      --shadow-lg: 0 12px 40px rgba(62, 54, 46, 0.12);
+      --shadow-xl: 0 20px 60px rgba(62, 54, 46, 0.15);
+      --radius: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+    }
+
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: #F8F5F0;
-      color: #3E362E;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
-    .card {
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 16px 24px;
+      transition: background 0.3s, box-shadow 0.3s, backdrop-filter 0.3s;
+    }
+    nav.scrolled {
+      background: rgba(248, 245, 240, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 1px 12px rgba(62, 54, 46, 0.06);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-weight: 800; font-size: 18px; letter-spacing: 3px;
+      color: var(--green); text-decoration: none;
+    }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a {
+      font-size: 14px; font-weight: 500; color: var(--dark-soft);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--green); }
+    .nav-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 12px;
+      background: var(--dark); color: var(--white) !important;
+      font-weight: 600 !important; font-size: 14px !important;
+      text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); color: var(--white) !important; }
+    .nav-cta svg { width: 16px; height: 16px; }
+
+    .mobile-menu-btn {
+      display: none; background: none; border: none; cursor: pointer; padding: 4px;
+    }
+    .mobile-menu-btn span {
+      display: block; width: 22px; height: 2px; background: var(--dark);
+      margin: 5px 0; transition: 0.3s; border-radius: 2px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--gradient-hero);
+      padding: 120px 24px 80px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: -30%; right: -20%;
+      width: 700px; height: 700px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(105, 114, 84, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: ''; position: absolute; bottom: -20%; left: -15%;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(146, 115, 92, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1200px; width: 100%; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+      align-items: center; position: relative; z-index: 1;
+    }
+    .hero-text { max-width: 560px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: 100px;
+      background: rgba(105, 114, 84, 0.1);
+      color: var(--green); font-size: 13px; font-weight: 600;
+      margin-bottom: 24px; letter-spacing: 0.5px;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+    .hero h1 {
+      font-size: clamp(40px, 5.5vw, 64px); font-weight: 800;
+      line-height: 1.08; letter-spacing: -1.5px;
+      color: var(--dark); margin-bottom: 20px;
+    }
+    .hero h1 span {
+      background: var(--gradient-green);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px; line-height: 1.6; color: var(--dark-soft);
+      margin-bottom: 36px; max-width: 460px;
+    }
+    .hero-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 28px; border-radius: 14px;
+      background: var(--dark); color: var(--white);
+      font-size: 16px; font-weight: 600; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-md);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .btn-primary svg { width: 20px; height: 20px; }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 16px 28px; border-radius: 14px;
+      background: transparent; color: var(--dark-soft);
+      font-size: 16px; font-weight: 500; text-decoration: none;
+      border: 1.5px solid var(--cream-dark);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+    /* Phone mockup */
+    .hero-visual { display: flex; justify-content: center; position: relative; }
+    .phone-mockup {
+      width: 280px; height: 560px; border-radius: 40px;
+      background: var(--dark);
+      box-shadow: var(--shadow-xl), inset 0 0 0 2px rgba(255,255,255,0.1);
+      position: relative; overflow: hidden;
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .phone-screen {
+      position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
+      border-radius: 30px; overflow: hidden;
+      background: linear-gradient(180deg, #F8F5F0 0%, #e8e2d6 100%);
+      display: flex; flex-direction: column; padding: 32px 20px 20px;
+    }
+    .phone-status { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .phone-status span { font-size: 11px; font-weight: 600; color: var(--dark-soft); }
+    .phone-greeting { font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .phone-context { font-size: 12px; color: var(--brown); margin-bottom: 16px; }
+    .phone-card {
+      background: var(--white); border-radius: 16px; padding: 14px;
+      margin-bottom: 10px; box-shadow: var(--shadow-sm);
+    }
+    .phone-card-label { font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 1px; margin-bottom: 6px; text-transform: uppercase; }
+    .phone-card-title { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
+    .phone-card-btn {
+      display: inline-block; padding: 6px 16px; border-radius: 8px;
+      background: var(--gradient-green); color: white; font-size: 11px; font-weight: 600;
+    }
+    .phone-scores { display: flex; gap: 6px; margin-top: 8px; }
+    .phone-score-bar {
+      flex: 1; height: 4px; border-radius: 4px; background: var(--cream-dark); overflow: hidden;
+    }
+    .phone-score-fill {
+      height: 100%; border-radius: 4px; background: var(--gradient-green);
+      animation: grow 2s ease-out forwards; transform-origin: left;
+    }
+    @keyframes grow { from { width: 0; } }
+    .phone-glow {
+      position: absolute; top: -60px; right: -60px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(105, 114, 84, 0.15), transparent 70%);
+      filter: blur(30px); pointer-events: none;
+    }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 100px 24px; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 100px;
+      background: rgba(105, 114, 84, 0.08);
+      color: var(--green); font-size: 13px; font-weight: 600;
+      margin-bottom: 16px; letter-spacing: 0.5px;
+    }
+    .section-title {
+      font-size: clamp(32px, 4vw, 48px); font-weight: 800;
+      line-height: 1.12; letter-spacing: -1px; color: var(--dark);
+      margin-bottom: 16px;
+    }
+    .section-desc {
+      font-size: 17px; color: var(--dark-soft); max-width: 540px; line-height: 1.6;
+    }
+
+    /* ── FEATURES ── */
+    .features { background: var(--white); }
+    .features-header { text-align: center; margin-bottom: 64px; }
+    .features-header .section-desc { margin: 0 auto; }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;
+    }
+    .feature-card {
+      padding: 36px; border-radius: var(--radius-lg);
+      background: var(--cream);
+      border: 1px solid var(--card-border);
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; font-size: 24px;
+    }
+    .feature-icon.green { background: rgba(105, 114, 84, 0.12); }
+    .feature-icon.warm { background: rgba(146, 115, 92, 0.12); }
+    .feature-icon.dark { background: rgba(62, 54, 46, 0.08); }
+    .feature-card h3 {
+      font-size: 20px; font-weight: 700; color: var(--dark);
+      margin-bottom: 10px;
+    }
+    .feature-card p {
+      font-size: 15px; color: var(--dark-soft); line-height: 1.6;
+    }
+    .feature-card.highlight {
+      grid-column: span 2;
+      background: var(--gradient-green); color: white;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+    }
+    .feature-card.highlight h3 { color: white; }
+    .feature-card.highlight p { color: rgba(255,255,255,0.85); }
+    .highlight-visual {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .highlight-bar {
+      height: 8px; border-radius: 8px; background: rgba(255,255,255,0.2);
+      overflow: hidden;
+    }
+    .highlight-bar-fill {
+      height: 100%; border-radius: 8px;
+      background: rgba(255,255,255,0.7);
+    }
+    .highlight-bar-label {
+      display: flex; justify-content: space-between;
+      font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.7);
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-it-works { background: var(--cream); }
+    .how-header { text-align: center; margin-bottom: 64px; }
+    .how-header .section-desc { margin: 0 auto; }
+    .steps {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+      position: relative;
+    }
+    .steps::before {
+      content: ''; position: absolute; top: 44px; left: 12.5%; right: 12.5%;
+      height: 2px; background: var(--cream-dark);
+    }
+    .step {
+      text-align: center; position: relative; z-index: 1;
+    }
+    .step-num {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; font-size: 18px; font-weight: 700;
+      background: var(--white); border: 2px solid var(--cream-dark);
+      color: var(--green);
+      transition: background 0.3s, color 0.3s, border-color 0.3s;
+    }
+    .step:hover .step-num {
+      background: var(--green); color: white; border-color: var(--green);
+    }
+    .step-icon { font-size: 32px; margin-bottom: 12px; }
+    .step h3 { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+    .step p { font-size: 14px; color: var(--dark-soft); line-height: 1.5; }
+
+    /* ── AUDIENCE ── */
+    .audience { background: var(--white); }
+    .audience-header { text-align: center; margin-bottom: 56px; }
+    .audience-header .section-desc { margin: 0 auto; }
+    .audience-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    }
+    .audience-card {
+      padding: 28px; border-radius: var(--radius);
+      background: var(--cream); border: 1px solid var(--card-border);
+      text-align: center; transition: transform 0.3s;
+    }
+    .audience-card:hover { transform: translateY(-3px); }
+    .audience-card .emoji { font-size: 36px; margin-bottom: 14px; }
+    .audience-card h3 { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+    .audience-card p { font-size: 14px; color: var(--dark-soft); }
+
+    /* ── REVIEWS ── */
+    .reviews { background: var(--cream); overflow: hidden; }
+    .reviews-header { text-align: center; margin-bottom: 48px; }
+    .reviews-header .section-desc { margin: 0 auto; }
+    .review-track {
+      display: flex; gap: 20px;
+      animation: scroll-left 40s linear infinite;
+      width: max-content;
+    }
+    .review-track:hover { animation-play-state: paused; }
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .review-card {
+      flex-shrink: 0; width: 320px; padding: 28px;
+      background: var(--white); border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow-sm);
+    }
+    .review-stars { color: #E8A838; font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; }
+    .review-card p { font-size: 15px; color: var(--dark-soft); line-height: 1.6; margin-bottom: 16px; }
+    .review-author { display: flex; align-items: center; gap: 10px; }
+    .review-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--gradient-green);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 700; font-size: 14px;
+    }
+    .review-name { font-size: 14px; font-weight: 600; color: var(--dark); }
+    .review-label { font-size: 12px; color: var(--brown-light); }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: var(--gradient-hero); padding: 100px 24px;
       text-align: center;
-      max-width: 420px;
     }
-    h1 {
-      color: #697254;
-      font-size: 32px;
-      letter-spacing: 8px;
-      font-weight: 700;
-      margin-bottom: 12px;
+    .cta-inner { max-width: 600px; margin: 0 auto; }
+    .cta-inner h2 {
+      font-size: clamp(32px, 4vw, 48px); font-weight: 800;
+      line-height: 1.12; letter-spacing: -1px; color: var(--dark);
+      margin-bottom: 16px;
     }
-    .tagline {
-      color: #92735C;
-      font-size: 17px;
-      margin-bottom: 40px;
+    .cta-inner h2 span {
+      background: var(--gradient-green);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .links {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .cta-inner p {
+      font-size: 17px; color: var(--dark-soft); margin-bottom: 32px; line-height: 1.6;
     }
-    .links a {
-      display: block;
-      padding: 16px 32px;
-      background: #FFFDF9;
-      border: 1px solid #E8E2DA;
-      border-radius: 14px;
-      color: #697254;
-      text-decoration: none;
-      font-size: 16px;
-      font-weight: 600;
-      transition: background 0.2s;
+    .cta-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .cta-note { font-size: 13px; color: var(--brown-light); margin-top: 20px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--dark); color: rgba(255,255,255,0.6);
+      padding: 48px 24px 32px;
     }
-    .links a:hover {
-      background: #697254;
-      color: #fff;
-      border-color: #697254;
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 24px;
     }
-    .footer {
-      margin-top: 48px;
-      color: #B69C85;
-      font-size: 13px;
+    .footer-brand {
+      font-weight: 800; font-size: 16px; letter-spacing: 3px; color: white;
     }
-    .footer a {
-      color: #697254;
-      text-decoration: none;
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-links a {
+      font-size: 14px; color: rgba(255,255,255,0.5);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: white; }
+    .footer-copy { font-size: 13px; }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; text-align: center; gap: 48px; }
+      .hero-text { max-width: 100%; }
+      .hero-sub { margin-left: auto; margin-right: auto; }
+      .hero-actions { justify-content: center; }
+      .features-grid { grid-template-columns: 1fr; }
+      .feature-card.highlight { grid-column: span 1; grid-template-columns: 1fr; }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .steps::before { display: none; }
+      .audience-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .mobile-menu-btn { display: block; }
+    }
+    @media (max-width: 600px) {
+      .hero { padding: 100px 20px 60px; }
+      section { padding: 72px 20px; }
+      .steps { grid-template-columns: 1fr 1fr; gap: 20px; }
+      .phone-mockup { width: 240px; height: 480px; }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>S T A G E R O O T</h1>
-    <p class="tagline">AI Camera Performance Coach</p>
-    <div class="links">
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms of Service</a>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">STAGEROOT</a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#audience">Who It's For</a>
+      <a href="#reviews">Reviews</a>
+      <a href="https://apps.apple.com/app/stageroot/id6744587296" class="nav-cta" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        Download
+      </a>
     </div>
-    <div class="footer">
-      <p>&copy; 2026 StageRoot</p>
-      <p style="margin-top:4px;"><a href="mailto:support@stageroot.app">support@stageroot.app</a></p>
+    <button class="mobile-menu-btn" onclick="document.querySelector('.nav-links').style.display=document.querySelector('.nav-links').style.display==='flex'?'none':'flex'" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text fade-up">
+      <div class="hero-badge"><span class="dot"></span> AI-Powered Coaching</div>
+      <h1>Speak powerfully <span>on camera</span></h1>
+      <p class="hero-sub">Record a short practice, get personalized AI coaching feedback, and improve every time you hit record.</p>
+      <div class="hero-actions">
+        <a href="https://apps.apple.com/app/stageroot/id6744587296" class="btn-primary" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          Download for iOS
+        </a>
+        <a href="#features" class="btn-secondary">Learn more</a>
+      </div>
+    </div>
+    <div class="hero-visual fade-up">
+      <div class="phone-mockup">
+        <div class="phone-glow"></div>
+        <div class="phone-screen">
+          <div class="phone-status"><span>9:41</span><span>StageRoot</span></div>
+          <div class="phone-greeting">Good morning</div>
+          <div class="phone-context">Speak powerfully on camera.</div>
+          <div class="phone-card">
+            <div class="phone-card-label">Daily Challenge</div>
+            <div class="phone-card-title">Introduce yourself in 15 seconds</div>
+            <div class="phone-card-btn">Start</div>
+          </div>
+          <div class="phone-card">
+            <div class="phone-card-label">Created For You</div>
+            <div class="phone-card-title">Pitch your idea with confidence</div>
+            <div class="phone-scores">
+              <div class="phone-score-bar"><div class="phone-score-fill" style="width:78%"></div></div>
+              <div class="phone-score-bar"><div class="phone-score-fill" style="width:65%"></div></div>
+              <div class="phone-score-bar"><div class="phone-score-fill" style="width:88%"></div></div>
+              <div class="phone-score-bar"><div class="phone-score-fill" style="width:55%"></div></div>
+              <div class="phone-score-bar"><div class="phone-score-fill" style="width:72%"></div></div>
+            </div>
+          </div>
+          <div class="phone-card" style="background: var(--gradient-green); color: white;">
+            <div class="phone-card-label" style="color: rgba(255,255,255,0.7);">AI Coach</div>
+            <div class="phone-card-title" style="color: white;">Practice any topic</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-inner">
+    <div class="features-header fade-up">
+      <div class="section-tag">Features</div>
+      <h2 class="section-title">Everything you need to grow on camera</h2>
+      <p class="section-desc">AI coaching that watches, listens, and gives you real feedback — not generic tips.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <div class="feature-icon green">🎯</div>
+        <h3>AI Performance Analysis</h3>
+        <p>Every practice is analyzed for clarity, confidence, energy, voice control, and task relevance. Five dimensions, one score.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon warm">📈</div>
+        <h3>Real Progress Tracking</h3>
+        <p>See your skill averages rise over time. Weekly and monthly trends show where you've grown and where to focus next.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon dark">🧠</div>
+        <h3>Personalized Practices</h3>
+        <p>AI generates practice prompts tailored to your weak spots, goals, and interest area. No two users get the same exercises.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon green">🔥</div>
+        <h3>Daily Challenges</h3>
+        <p>A fresh challenge every day to keep you consistent. Build streaks, earn achievements, and push your comfort zone.</p>
+      </div>
+      <div class="feature-card highlight fade-up">
+        <div>
+          <h3>Comparative Progress Coaching</h3>
+          <p>Your AI coach remembers your past performances. It tracks improvements across sessions and tells you exactly what changed — not just what to fix.</p>
+        </div>
+        <div class="highlight-visual">
+          <div class="highlight-bar-label"><span>Clarity</span><span>78</span></div>
+          <div class="highlight-bar"><div class="highlight-bar-fill" style="width:78%"></div></div>
+          <div class="highlight-bar-label"><span>Confidence</span><span>65</span></div>
+          <div class="highlight-bar"><div class="highlight-bar-fill" style="width:65%"></div></div>
+          <div class="highlight-bar-label"><span>Energy</span><span>88</span></div>
+          <div class="highlight-bar"><div class="highlight-bar-fill" style="width:88%"></div></div>
+          <div class="highlight-bar-label"><span>Voice Control</span><span>72</span></div>
+          <div class="highlight-bar"><div class="highlight-bar-fill" style="width:72%"></div></div>
+          <div class="highlight-bar-label"><span>Task Relevance</span><span>82</span></div>
+          <div class="highlight-bar"><div class="highlight-bar-fill" style="width:82%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="how-it-works">
+  <div class="section-inner">
+    <div class="how-header fade-up">
+      <div class="section-tag">How It Works</div>
+      <h2 class="section-title">Four steps to better delivery</h2>
+      <p class="section-desc">From pressing record to measurable improvement — in under two minutes.</p>
+    </div>
+    <div class="steps">
+      <div class="step fade-up">
+        <div class="step-num">1</div>
+        <div class="step-icon">🎬</div>
+        <h3>Pick a practice</h3>
+        <p>Choose a daily challenge, a personalized exercise, or bring your own topic.</p>
+      </div>
+      <div class="step fade-up">
+        <div class="step-num">2</div>
+        <div class="step-icon">📱</div>
+        <h3>Record on camera</h3>
+        <p>Hit record and speak. 10 to 45 seconds is all it takes.</p>
+      </div>
+      <div class="step fade-up">
+        <div class="step-num">3</div>
+        <div class="step-icon">🤖</div>
+        <h3>Get AI feedback</h3>
+        <p>Your coach analyzes voice, visuals, and content — then scores five key skills.</p>
+      </div>
+      <div class="step fade-up">
+        <div class="step-num">4</div>
+        <div class="step-icon">🚀</div>
+        <h3>Track and improve</h3>
+        <p>Watch your scores climb. Your coach adapts as you grow.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AUDIENCE -->
+<section class="audience" id="audience">
+  <div class="section-inner">
+    <div class="audience-header fade-up">
+      <div class="section-tag">Who It's For</div>
+      <h2 class="section-title">Built for anyone who speaks on camera</h2>
+      <p class="section-desc">Whether you're creating content, presenting, or building confidence — StageRoot meets you where you are.</p>
+    </div>
+    <div class="audience-grid">
+      <div class="audience-card fade-up">
+        <div class="emoji">🎥</div>
+        <h3>Content Creators</h3>
+        <p>YouTube, TikTok, Reels — deliver with energy and clarity every take.</p>
+      </div>
+      <div class="audience-card fade-up">
+        <div class="emoji">🎤</div>
+        <h3>Speakers</h3>
+        <p>Stage talks, conferences, panels — command the room with confidence.</p>
+      </div>
+      <div class="audience-card fade-up">
+        <div class="emoji">🎭</div>
+        <h3>Actors & Presenters</h3>
+        <p>TV, film, auditions — refine your delivery and on-camera presence.</p>
+      </div>
+      <div class="audience-card fade-up">
+        <div class="emoji">💼</div>
+        <h3>Business Professionals</h3>
+        <p>Pitches, meetings, video calls — communicate with impact.</p>
+      </div>
+      <div class="audience-card fade-up">
+        <div class="emoji">🎮</div>
+        <h3>Live Streamers</h3>
+        <p>Twitch, YouTube Live — keep your audience engaged for hours.</p>
+      </div>
+      <div class="audience-card fade-up">
+        <div class="emoji">✨</div>
+        <h3>Personal Growth</h3>
+        <p>Build confidence, express yourself clearly, grow as a communicator.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="reviews" id="reviews">
+  <div class="section-inner">
+    <div class="reviews-header fade-up">
+      <div class="section-tag">Reviews</div>
+      <h2 class="section-title">What people say</h2>
+      <p class="section-desc">Real feedback from real users building their on-camera presence.</p>
+    </div>
+  </div>
+  <div class="review-track">
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>I used to freeze the moment I hit record. After two weeks of daily challenges, I can introduce myself confidently in one take.</p>
+      <div class="review-author">
+        <div class="review-avatar">A</div>
+        <div><div class="review-name">Aylin</div><div class="review-label">Content Creator</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>The AI feedback is surprisingly specific. It told me I speed up in the last 10 seconds — something no friend ever noticed.</p>
+      <div class="review-author">
+        <div class="review-avatar">M</div>
+        <div><div class="review-name">Marcus</div><div class="review-label">Speaker</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>Personalized practices are a game changer. It knows I struggle with eye contact and gives me exercises for that specifically.</p>
+      <div class="review-author">
+        <div class="review-avatar">S</div>
+        <div><div class="review-name">Sofia</div><div class="review-label">Business Professional</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>I practice every morning before my streams. My energy scores went from 40 to 75 in a month. Chat noticed the difference.</p>
+      <div class="review-author">
+        <div class="review-avatar">K</div>
+        <div><div class="review-name">Kerem</div><div class="review-label">Streamer</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>Finally an app that doesn't just say "be more confident." It shows you exactly what to fix and tracks if you actually improved.</p>
+      <div class="review-author">
+        <div class="review-avatar">E</div>
+        <div><div class="review-name">Elena</div><div class="review-label">Actor</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>The progress tracking is addictive. Seeing my clarity score go up week by week keeps me coming back every day.</p>
+      <div class="review-author">
+        <div class="review-avatar">D</div>
+        <div><div class="review-name">David</div><div class="review-label">Personal Growth</div></div>
+      </div>
+    </div>
+    <!-- Duplicate set for infinite scroll -->
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>I used to freeze the moment I hit record. After two weeks of daily challenges, I can introduce myself confidently in one take.</p>
+      <div class="review-author">
+        <div class="review-avatar">A</div>
+        <div><div class="review-name">Aylin</div><div class="review-label">Content Creator</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>The AI feedback is surprisingly specific. It told me I speed up in the last 10 seconds — something no friend ever noticed.</p>
+      <div class="review-author">
+        <div class="review-avatar">M</div>
+        <div><div class="review-name">Marcus</div><div class="review-label">Speaker</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>Personalized practices are a game changer. It knows I struggle with eye contact and gives me exercises for that specifically.</p>
+      <div class="review-author">
+        <div class="review-avatar">S</div>
+        <div><div class="review-name">Sofia</div><div class="review-label">Business Professional</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>I practice every morning before my streams. My energy scores went from 40 to 75 in a month. Chat noticed the difference.</p>
+      <div class="review-author">
+        <div class="review-avatar">K</div>
+        <div><div class="review-name">Kerem</div><div class="review-label">Streamer</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>Finally an app that doesn't just say "be more confident." It shows you exactly what to fix and tracks if you actually improved.</p>
+      <div class="review-author">
+        <div class="review-avatar">E</div>
+        <div><div class="review-name">Elena</div><div class="review-label">Actor</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p>The progress tracking is addictive. Seeing my clarity score go up week by week keeps me coming back every day.</p>
+      <div class="review-author">
+        <div class="review-avatar">D</div>
+        <div><div class="review-name">David</div><div class="review-label">Personal Growth</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner fade-up">
+    <h2>Start improving <span>today</span></h2>
+    <p>No account needed. Record your first practice and get AI coaching feedback in under two minutes.</p>
+    <div class="cta-actions">
+      <a href="https://apps.apple.com/app/stageroot/id6744587296" class="btn-primary" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        Download for iOS
+      </a>
+    </div>
+    <p class="cta-note">Free to start. 3 practices without an account.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">STAGEROOT</div>
+    </div>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="delete-account.html">Delete Account</a>
+      <a href="mailto:support@stageroot.app">Support</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 StageRoot. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  // Sticky nav background
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  }, { passive: true });
+
+  // Scroll-triggered fade-up animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
 </body>
 </html>
